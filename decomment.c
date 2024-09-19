@@ -89,7 +89,7 @@ enum StateType handleStartCommentState (int c)
       putchar('\'');
       state = IN_CHAR;
     } else if (c == '*') {
-      putchar('\s');
+      putchar(' ');
       state = IN_COMMENT;
    } else {
       putchar('/');
@@ -155,7 +155,7 @@ enum StateType handleEndCommentState (int c)
       state = IN_COMMENT;
    } else if (c == '*') {
       state = END_COMMENT;
-   } else if (c == '\\') {
+   } else if (c == '/') {
       state = NORMAL;
    } else if (c == EOF) {
       fprintf(stderr, "Error: line X: unterminated comment");
@@ -170,8 +170,13 @@ enum StateType handleEndCommentState (int c)
 Returns error if file ends on an unterminated comment.*/
 int main(void) {
     int c;
+    int lastCommentLine;
+    int line;
     enum StateType state = NORMAL;
     while ((c = getchar()) != EOF) {
+        if(c == '\n'){
+         line++;
+        }
         switch (state) {
             case NORMAL:
                 state = handleNormalState(c);
@@ -193,11 +198,24 @@ int main(void) {
                 break;
             case IN_COMMENT:
                 state = handleInCommentState(c);
+                lastCommentLine = line;
                 break;
             case END_COMMENT:
                 state = handleEndCommentState(c);
                 break;
                 
         }
+    }
+    switch (state) {
+      case START_COMMENT:
+         putchar('/');
+      case IN_COMMENT:
+         fprintf(stderr, "Error: line %d: unterminated comment", lastCommentLine);
+         exit(EXIT_FAILURE);
+      case END_COMMENT:
+         fprintf(stderr, "Error: line %d: unterminated comment", lastCommentLine);
+         exit(EXIT_FAILURE);
+      default:
+         exit(EXIT_SUCCESS);
     }
 }
