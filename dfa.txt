@@ -1,0 +1,53 @@
+NORMAL (accept) <-- start state:
+
+       isDoubleQuote: IN_STRING (print ")
+       isSingleQuote: IN_CHAR (print ')
+       isFrontSlash:  START_COMMENT
+       other: NORMAL (print other)
+
+IN_STRING (accept):
+
+        isDoubleQuote: NORMAL (print ")
+        isBackSlash:   IN_ESCAPED_STRING (print \)
+        other: IN_STRING (print other)
+
+
+IN_CHAR (accept):
+
+        isSingleQuote: NORMAL (print ')
+        isBackSlash: IN_ESCAPED_CHAR (print \)
+        other: IN_CHAR (print other)
+
+START_COMMENT (accept):
+
+        isFrontSlash: START_COMMENT (print /)
+        isDoubleQuote: IN_STRING (print /")
+        isSingleQuote: IN_CHAR (print /')
+        isStar: IN_COMMENT (print \s)
+        other: NORMAL (print /other)
+
+IN_ESCAPED_STRING (accept):
+
+        other: IN_STRING (print other)
+
+
+IN_ESCAPED_CHAR (accept):
+
+        other: IN_CHAR (print other)
+
+
+IN_COMMENT (reject):
+
+        isNewLine: IN_COMMENT (print \n)
+        isStar: END_COMMENT
+        other: IN_COMMENT
+
+END_COMMENT (reject):
+
+        isNewLine: IN_COMMENT (print \n)
+        isStar: END_COMMENT
+        isBackSlash: NORMAL
+        other: IN_COMMENT
+
+
+Note: \' and \" refer to the single quote and double quote.
